@@ -19,7 +19,7 @@ class Board:
     def __str__(self):
         s = "\r"
         for y in range(Height - 1, -1, -1):
-            row = ""
+            row = " "
             for x in range(Width):
                 if self.board[x][y] == None:
                     row = row + " "
@@ -27,8 +27,9 @@ class Board:
                     row = row + "R"
                 elif self.board[x][y] == Player.Black:
                     row = row + "B"
-            s = s + "[" + row + "]\n"
-        s = s + " " + ''.join([str(i) for i in range(Width)]) + " \n"
+                row += " "
+            s += "[" + row + "]\n"
+        s += "  " + ' '.join([str(i) for i in range(Width)]) + "  \n"
 
         return s
 
