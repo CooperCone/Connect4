@@ -1,156 +1,52 @@
-from enum import Enum
-from abc import ABC
 import os
 
-Width = 7
-Height = 6
-
-class Player(Enum):
-    Red = 1
-    Black = 2
-
-    def __str__(self):
-        return self.name
-
-class Board:
-    def __init__(self):
-        self.board = [[None for y in range(Height)] for x in range(Width)]
-    
-    def __str__(self):
-        s = "\r"
-        for y in range(Height - 1, -1, -1):
-            row = " "
-            for x in range(Width):
-                if self.board[x][y] == None:
-                    row = row + " "
-                elif self.board[x][y] == Player.Red:
-                    row = row + "R"
-                elif self.board[x][y] == Player.Black:
-                    row = row + "B"
-                row += " "
-            s += "[" + row + "]\n"
-        s += "  " + ' '.join([str(i) for i in range(Width)]) + "  \n"
-
-        return s
-
-    def canPlacePiece(self, column):
-        return self.board[column][Height - 1] == None
-
-    def placePiece(self, column, player):
-        for y in range(Height):
-            if self.board[column][y] == None:
-                self.board[column][y] = player
-                break
-    
-    def detectWin(self):
-        # detect vertical wins
-        for x in range(Width):
-            curPlayer = None
-            curRun = 1
-            for y in range(Height):
-                if self.board[x][y] == curPlayer:
-                    curRun += 1
-                else:
-                    curPlayer = self.board[x][y]
-                    curRun = 1
-                
-                if curRun == 4 and curPlayer != None:
-                    return curPlayer
-        
-        # detect horizontal wins
-        for y in range(Height):
-            curPlayer = None
-            curRun = 1
-            for x in range(Width):
-                if self.board[x][y] == curPlayer:
-                    curRun += 1
-                else:
-                    curPlayer = self.board[x][y]
-                    curRun = 1
-                
-                if curRun == 4 and curPlayer != None:
-                    return curPlayer
-        
-        # detect up right diagonal wins
-        for x in range(Width - 3):
-            for y in range(Height - 3):
-                player = self.board[x][y]
-                for i in range(4):
-                    if self.board[x + i][y + i] != player:
-                        break
-
-                    if i == 3:
-                        return player
-
-        # detect up left diagonal wins
-        for x in range(Width - 1, 1, -1):
-            for y in range(Height - 1, 1, -1):
-                player = self.board[x][y]
-                for i in range(4):
-                    if self.board[x - i][y - i] != player:
-                        break
-
-                    if i == 3:
-                        return player
-
-        return None
-
-class Strategy:
-    def doTurn(self, board):
-        pass
-
-def validateColumn(column, board):
-    if not column.isnumeric():
-        return "Sorry, you need to input a number.\n"
-    
-    value = int(column)
-    if value < 0 or value > Width - 1:
-        return "Sorry, your column number must be between 0 and {}.\n".format(Width - 1)
-
-    if not board.canPlacePiece(value):
-        return "Sorry, you can't place a piece in a column that is full.\n"
-    
-    return True
-
-
-class ManualStrategy(Strategy):
-    def doTurn(self, board, name):
-        column = input(name + ": Choose a Column: ")
-
-        text = validateColumn(column, board)
-        while text != True:
-            print(text)
-            column = input("Try again: ")
-            text = validateColumn(column, board)
-
-        columnValue = int(column)
-
-        return columnValue
+from strategy import Strategy
+from player import Player, getOpposingPlayer
+from board import Board
+import logging
 
 class Game:
-    def __init__(self, redStrategy, blackStrategy):
+    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy):
         self.redStrat = redStrategy
-        self.blackStrat = blackStrategy
+        self.blueStrat = blueStrategy
         self.board = Board()
+        self.prevTurn = None
+        self.logger = logging.getLogger('Game')
+        self.turnNumber = 1
 
-    def turn(self, strat, player):
+    def turn(self, strat: Strategy, player: Player):
+        self.logger.info(f"New Turn: {str(player)}")
         os.system('cls')
 
         print(self.board)
-        column = strat.doTurn(self.board, str(player))
+        if self.prevTurn != None:
+            print("{} placed a piece in column: {}".format(str(getOpposingPlayer(player)), self.prevTurn))
+        column = strat.doTurn(self.board, player, self.turnNumber)
         assert(self.board.canPlacePiece(column))
         self.board.placePiece(column, player)
+        self.logger.info(f"{str(player)} placed in column {column}")
+        self.prevTurn = column
+
+        self.turnNumber += 1
 
         if self.board.detectWin() == player:
-            print(str(player) + " Wins!!!\n")
             return True
         
         return False
 
     def play(self):
+        winner = None
         while True:
             if self.turn(self.redStrat, Player.Red):
+                winner = Player.Red
                 break
             
-            if self.turn(self.redStrat, Player.Black):
+            if self.turn(self.blueStrat, Player.Blue):
+                winner = Player.Blue
                 break
+        
+        os.system('cls')
+        print(self.board)
+
+        self.logger.info(f"{str(winner)} won the game")
+        print(str(winner) + " Wins!!!\n")
