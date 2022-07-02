@@ -9,12 +9,13 @@ import random
 casesToGenerate = 50
 turnDistribution = (1, 10)
 
-for i in range(casesToGenerate):
-    board = Board()
-
+i = 0
+while i < casesToGenerate:
     numTurns = random.randrange(turnDistribution[0], turnDistribution[1])
 
     game = Game(RandomStrategy(), RandomStrategy(), NoView())
     game.play(maxTurns=numTurns)
 
-    print(game.board.serialize())
+    if game.board.detectWin() == None:
+        print(game.board.serialize())
+        i += 1

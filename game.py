@@ -8,10 +8,12 @@ from view import View
 from log import getLogger
 
 class Game:
-    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy, view: View):
+    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy, view: View, startBoard: Board = None):
         self.redStrat = redStrategy
+        self.redStrat.setPlayer(Player.Red)
         self.blueStrat = blueStrategy
-        self.board = Board()
+        self.blueStrat.setPlayer(Player.Blue)
+        self.board = Board() if startBoard == None else startBoard
         self.view = view
         self.prevTurn = None
         self.logger = getLogger('Game')
@@ -22,7 +24,7 @@ class Game:
         
         self.view.onPlacePiece(self.board, player, self.prevTurn)
 
-        column = strat.doTurn(self.board, player, self.turnNumber)
+        column = strat.doTurn(self.board, self.turnNumber)
         assert(self.board.canPlacePiece(column))
         self.board.placePiece(column, player)
         self.logger.info(f"{str(player)} placed in column {column}")

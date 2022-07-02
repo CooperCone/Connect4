@@ -7,6 +7,9 @@ from log import getLogger
 import random
 
 class Strategy:
+    def setPlayer(self, player):
+        self.player = player
+
     def doTurn(self, board, player, turnNumber):
         pass
 
@@ -25,8 +28,8 @@ def validateColumn(column, board):
 
 
 class ManualStrategy(Strategy):
-    def doTurn(self, board, player, _):
-        column = input(str(player) + ": Choose a Column: ")
+    def doTurn(self, board, _):
+        column = input(str(self.player) + ": Choose a Column: ")
 
         text = validateColumn(column, board)
         while text != True:
@@ -43,18 +46,21 @@ class RandomStrategy(Strategy):
         if seed != None:
             random.seed(seed)
     
-    def doTurn(self, board: Board, player: Player, _):
+    def doTurn(self, board: Board, _):
         col = random.randrange(Width)
         while not board.canPlacePiece(col):
             col = random.randrange(Width)
         return col
 
 class MinimaxStrategy(Strategy):
-    def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int], player: Player):
+    def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int]):
         self.maxDepth = maxDepth
         self.calculateValue = calculateValue
-        self.logger = getLogger(f'Minimax_{str(player)}')
         self.nodesExplored = 0
+    
+    def setPlayer(self, player):
+        self.player = player
+        self.logger = getLogger(f'Minimax_{str(player)}')
 
     def negamax(self, board: Board, player: Player, turnNumber: int, depth: int):
         self.nodesExplored += 1
@@ -115,10 +121,10 @@ class MinimaxStrategy(Strategy):
 
         return (maxValue, bestCol)
 
-    def doTurn(self, board: Board, player: Player, turnNumber: int):
+    def doTurn(self, board: Board, turnNumber: int):
         self.logger.info("Starting minimax")
         # self.nodesExplored = 0
         # (_, col) = self.negamax(board, player, turnNumber, self.maxDepth)
-        (_, col) = self.negamaxABPrune(board, player, turnNumber, self.maxDepth, -1e50, 1e50, True)
+        (_, col) = self.negamaxABPrune(board, self.player, turnNumber, self.maxDepth, -1e50, 1e50, True)
         # self.logger.info(f"Ended minimax with {self.nodesExplored} nodes explored")
         return col

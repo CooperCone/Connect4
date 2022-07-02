@@ -157,6 +157,7 @@ class Board:
                     self.board[x][y] = Player.Blue
                 else:
                     assert(False)
+                i += 1
 
 class BoardTest(unittest.TestCase):
     def testWin(self):
