@@ -1,3 +1,4 @@
+from codecs import charmap_encode
 import unittest
 
 from player import Player
@@ -127,6 +128,35 @@ class Board:
             return Player.Blue
 
         return None
+    
+    def serialize(self):
+        text = ""
+        for x in range(Width):
+            for y in range(Height):
+                player = self.board[x][y]
+                if player == None:
+                    text += 'e'
+                elif player == Player.Red:
+                    text += 'r'
+                elif player == Player.Blue:
+                    text += 'b'
+                else:
+                    assert(False)
+        return text
+                
+    def deserialize(self, text):
+        i = 0
+        for x in range(Width):
+            for y in range(Height):
+                character = text[i]
+                if character == 'e':
+                    self.board[x][y] = None
+                elif character == 'r':
+                    self.board[x][y] = Player.Red
+                elif character == 'b':
+                    self.board[x][y] = Player.Blue
+                else:
+                    assert(False)
 
 class BoardTest(unittest.TestCase):
     def testWin(self):

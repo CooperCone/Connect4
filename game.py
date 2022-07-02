@@ -4,24 +4,24 @@ import os
 from strategy import Strategy
 from player import Player, getOpposingPlayer
 from board import Board
+from view import View
 from log import getLogger
 
 class Game:
-    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy):
+    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy, view: View):
         self.redStrat = redStrategy
         self.blueStrat = blueStrategy
         self.board = Board()
+        self.view = view
         self.prevTurn = None
         self.logger = getLogger('Game')
         self.turnNumber = 1
 
     def turn(self, strat: Strategy, player: Player):
         self.logger.info(f"New Turn: {str(player)}")
-        os.system('cls')
+        
+        self.view.onPlacePiece(self.board, player, self.prevTurn)
 
-        print(self.board)
-        if self.prevTurn != None:
-            print("{} placed a piece in column: {}".format(str(getOpposingPlayer(player)), self.prevTurn))
         column = strat.doTurn(self.board, player, self.turnNumber)
         assert(self.board.canPlacePiece(column))
         self.board.placePiece(column, player)
@@ -35,9 +35,10 @@ class Game:
         
         return False
 
-    def play(self):
+    def play(self, maxTurns = None):
         winner = None
-        while True:
+        curTurn = 0
+        while maxTurns == None or curTurn < maxTurns:
             if self.turn(self.redStrat, Player.Red):
                 winner = Player.Red
                 break
@@ -45,9 +46,8 @@ class Game:
             if self.turn(self.blueStrat, Player.Blue):
                 winner = Player.Blue
                 break
+            
+            curTurn += 1
         
-        os.system('cls')
-        print(self.board)
-
+        self.view.onWin(self.board, winner)
         self.logger.info(f"{str(winner)} won the game")
-        print(str(winner) + " Wins!!!\n")

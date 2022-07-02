@@ -1,6 +1,8 @@
 import logging
 import os.path
 
+handler = None
+
 def setupLogger():
     global handler
     nameBase = 'game.log'
@@ -17,6 +19,9 @@ def setupLogger():
 def getLogger(name: str):
     global handler
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
+    if handler != None:
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+    else:
+        logger.setLevel(logging.CRITICAL)
     return logger

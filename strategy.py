@@ -4,6 +4,7 @@ from player import *
 from copy import deepcopy
 from typing import Callable
 from log import getLogger
+import random
 
 class Strategy:
     def doTurn(self, board, player, turnNumber):
@@ -37,6 +38,16 @@ class ManualStrategy(Strategy):
 
         return columnValue
 
+class RandomStrategy(Strategy):
+    def __init__(self, seed = None):
+        if seed != None:
+            random.seed(seed)
+    
+    def doTurn(self, board: Board, player: Player, _):
+        col = random.randrange(Width)
+        while not board.canPlacePiece(col):
+            col = random.randrange(Width)
+        return col
 
 class MinimaxStrategy(Strategy):
     def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int], player: Player):
@@ -110,5 +121,4 @@ class MinimaxStrategy(Strategy):
         # (_, col) = self.negamax(board, player, turnNumber, self.maxDepth)
         (_, col) = self.negamaxABPrune(board, player, turnNumber, self.maxDepth, -1e50, 1e50, True)
         # self.logger.info(f"Ended minimax with {self.nodesExplored} nodes explored")
-        print("col: {}".format(col))
         return col
