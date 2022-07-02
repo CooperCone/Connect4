@@ -1,9 +1,10 @@
+from locale import getlocale
 import os
 
 from strategy import Strategy
 from player import Player, getOpposingPlayer
 from board import Board
-import logging
+from log import getLogger
 
 class Game:
     def __init__(self, redStrategy: Strategy, blueStrategy: Strategy):
@@ -11,7 +12,7 @@ class Game:
         self.blueStrat = blueStrategy
         self.board = Board()
         self.prevTurn = None
-        self.logger = logging.getLogger('Game')
+        self.logger = getLogger('Game')
         self.turnNumber = 1
 
     def turn(self, strat: Strategy, player: Player):

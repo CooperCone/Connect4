@@ -1,3 +1,5 @@
+import unittest
+
 from player import Player
 
 WinRunSize = 4
@@ -92,10 +94,10 @@ class Board:
     def getUpLeftDiagonalRuns(self, size: int):
         runsOfSize = []
         for x in range(Width - 1, 1, -1):
-            for y in range(Height - 1, 1, -1):
+            for y in range(Height - 3):
                 player = self.board[x][y]
                 for i in range(size):
-                    if self.board[x - i][y - i] != player:
+                    if self.board[x - i][y + i] != player:
                         break
 
                     if i == size - 1 and player != None:
@@ -112,7 +114,7 @@ class Board:
         for lst in [vertRuns, horizRuns, rightDiagRuns, leftDiagRuns]:
             for player in lst:
                 runs[player] += 1
-        return runs        
+        return runs
 
     def detectWin(self):
         runs = self.getRunsOfSize(WinRunSize)
@@ -125,3 +127,29 @@ class Board:
             return Player.Blue
 
         return None
+
+class BoardTest(unittest.TestCase):
+    def testWin(self):
+        board = Board()
+        board.placePiece(0, Player.Red)
+        board.placePiece(0, Player.Red)
+        board.placePiece(0, Player.Red)
+        board.placePiece(0, Player.Blue)
+        board.placePiece(0, Player.Red)
+        board.placePiece(0, Player.Red)
+        board.placePiece(1, Player.Red)
+        board.placePiece(1, Player.Blue)
+        board.placePiece(2, Player.Blue)
+        board.placePiece(2, Player.Red)
+        board.placePiece(2, Player.Blue)
+        board.placePiece(2, Player.Blue)
+        board.placePiece(3, Player.Blue)
+        board.placePiece(3, Player.Blue)
+        board.placePiece(3, Player.Red)
+        board.placePiece(4, Player.Red)
+        board.placePiece(5, Player.Blue)
+        self.assertEqual(board.detectWin(), None)
+
+if __name__ == '__main__':
+    unittest.main()
+

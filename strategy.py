@@ -3,7 +3,7 @@ from player import *
 
 from copy import deepcopy
 from typing import Callable
-import logging
+from log import getLogger
 
 class Strategy:
     def doTurn(self, board, player, turnNumber):
@@ -42,61 +42,73 @@ class MinimaxStrategy(Strategy):
     def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int], player: Player):
         self.maxDepth = maxDepth
         self.calculateValue = calculateValue
-        self.logger = logging.getLogger(f'Minimax_{str(player)}')
+        self.logger = getLogger(f'Minimax_{str(player)}')
+        self.nodesExplored = 0
 
-    def minimize(self, board: Board, player: Player, turnNumber: int, depth: int):
+    def negamax(self, board: Board, player: Player, turnNumber: int, depth: int):
+        self.nodesExplored += 1
         depthDiff = (self.maxDepth - depth + 1) * 4
-        self.logger.info(' ' * (depthDiff) + f"Minimizing at depth: {depth}")
+        self.logger.info(' ' * (depthDiff) + f"Negamaxing at depth: {depth}")
         if depth == 0:
-            self.logger.info(' ' * (depthDiff) + f"Minimize found value of state: {self.calculateValue(board, player, turnNumber)}")
-            return (self.calculateValue(board, player, turnNumber), -1)
-
-        # big number, python doesn't have a max value
-        minValue = 1e50
-        bestCol = -1
-        for col in board.getValidColumns():
-            self.logger.info(' ' * (depthDiff) + f"Minimize looking at column: {col}")
-            newBoard = deepcopy(board)
-            newBoard.placePiece(col, getOpposingPlayer(player))
-
-            if newBoard.detectWin() != None:
-                return (self.calculateValue(newBoard, player, turnNumber), col)
-
-            (value, _) = self.maximize(newBoard, player, turnNumber + 1, depth - 1)
-            if value < minValue:
-                minValue = value
-                bestCol = col
-        self.logger.info(' ' * (depthDiff) + f"Minimize found best value of {minValue} at column {bestCol}")
-
-        return (minValue, bestCol)
-
-    def maximize(self, board: Board, player: Player, turnNumber: int, depth: int):
-        depthDiff = (self.maxDepth - depth + 1) * 4
-        self.logger.info(' ' * (depthDiff) + f"Maximizing at depth: {depth}")
-        if depth == 0:
-            self.logger.info(' ' * (depthDiff) + f"Maximize found value of state: {self.calculateValue(board, player, turnNumber)}")
+            self.logger.info(' ' * (depthDiff) + f"Negamaxing found value of state: {self.calculateValue(board, player, turnNumber)}")
             return (self.calculateValue(board, player, turnNumber), -1)
 
         maxValue = -1e50
         bestCol = -1
         for col in board.getValidColumns():
-            self.logger.info(' ' * (depthDiff) + f"Maximize looking at column: {col}")
+            self.logger.info(' ' * (depthDiff) + f"Negamax looking at column: {col}")
             newBoard = deepcopy(board)
             newBoard.placePiece(col, player)
 
             if newBoard.detectWin() != None:
                 return (self.calculateValue(newBoard, player, turnNumber), col)
 
-            (value, _) = self.minimize(newBoard, player, turnNumber + 1, depth - 1)
+            (value, _) = self.negamax(newBoard, getOpposingPlayer(player), turnNumber + 1, depth - 1)
+            value *= -1
             if value > maxValue:
                 maxValue = value
                 bestCol = col
-        self.logger.info(' ' * (depthDiff) + f"Maximize found best value of {maxValue} at column {bestCol}")
+        self.logger.info(' ' * (depthDiff) + f"Negamax found best value of {maxValue} at column {bestCol}")
+
+        return (maxValue, bestCol)
+
+    def negamaxABPrune(self, board: Board, player: Player, turnNumber: int, depth: int, alpha: int, beta: int, isMaximizing: bool):
+        self.nodesExplored += 1
+        depthDiff = (self.maxDepth - depth + 1) * 4
+        self.logger.info(' ' * (depthDiff) + f"Negamaxing at depth: {depth}")
+        if depth == 0:
+            self.logger.info(' ' * (depthDiff) + f"Negamaxing found value of state: {self.calculateValue(board, player, turnNumber)}")
+            return (self.calculateValue(board, player, turnNumber), -1)
+
+        maxValue = -1e50
+        bestCol = -1
+        for col in board.getValidColumns():
+            self.logger.info(' ' * (depthDiff) + f"Negamax looking at column: {col}")
+            newBoard = deepcopy(board)
+            newBoard.placePiece(col, player)
+
+            if newBoard.detectWin() != None:
+                return (self.calculateValue(newBoard, player, turnNumber), col)
+
+            (value, _) = self.negamaxABPrune(newBoard, getOpposingPlayer(player), turnNumber + 1, depth - 1, -beta, -alpha, not isMaximizing)
+            value *= -1
+            if value > maxValue:
+                maxValue = value
+                bestCol = col
+
+            alpha = max(alpha, value)
+            if alpha >= beta:
+                break
+
+        self.logger.info(' ' * (depthDiff) + f"Negamax found best value of {maxValue} at column {bestCol}")
 
         return (maxValue, bestCol)
 
     def doTurn(self, board: Board, player: Player, turnNumber: int):
         self.logger.info("Starting minimax")
-        (_, col) = self.maximize(board, player, turnNumber, self.maxDepth)
+        # self.nodesExplored = 0
+        # (_, col) = self.negamax(board, player, turnNumber, self.maxDepth)
+        (_, col) = self.negamaxABPrune(board, player, turnNumber, self.maxDepth, -1e50, 1e50, True)
+        # self.logger.info(f"Ended minimax with {self.nodesExplored} nodes explored")
         print("col: {}".format(col))
         return col

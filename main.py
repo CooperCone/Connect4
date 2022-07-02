@@ -1,12 +1,19 @@
 from game import Game
 from strategy import *
 from valueHeuristics import *
-import logging
+import log
 
-logging.basicConfig(filename=f'game.log',
-    filemode='w',
-    format='%(name)s %(message)s',
-    level=logging.DEBUG)
+log.setupLogger()
+logger = log.getLogger('Main')
 
-game = Game(ManualStrategy(), MinimaxStrategy(4, runHeuristic, Player.Blue))
+redStrat = MinimaxStrategy(4, runHeuristic, Player.Red)
+blueStrat = MinimaxStrategy(4, runHeuristic, Player.Blue)
+
+game = Game(redStrat, blueStrat)
+# game = Game(MinimaxStrategy(4, runHeuristic, Player.Red), ManualStrategy())
+# game = Game(ManualStrategy(), ManualStrategy())
+
 game.play()
+
+logger.info(f"Red nodes: {redStrat.nodesExplored}")
+logger.info(f"Blue nodes: {redStrat.nodesExplored}")
