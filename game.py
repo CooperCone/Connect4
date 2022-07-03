@@ -5,18 +5,18 @@ from strategy import Strategy
 from player import Player, getOpposingPlayer
 from board import Board
 from view import View
-from log import getLogger
+from log import LoggingStrategy
 
 class Game:
-    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy, view: View, startBoard: Board = None):
+    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy, view: View, logging: LoggingStrategy, startBoard: Board = None):
         self.redStrat = redStrategy
         self.redStrat.setPlayer(Player.Red)
         self.blueStrat = blueStrategy
         self.blueStrat.setPlayer(Player.Blue)
         self.board = Board() if startBoard == None else startBoard
+        self.logger = logging.getLogger('Game')
         self.view = view
         self.prevTurn = None
-        self.logger = getLogger('Game')
         self.turnNumber = 1
 
     def turn(self, strat: Strategy, player: Player):

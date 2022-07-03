@@ -3,7 +3,7 @@ from player import *
 
 from copy import deepcopy
 from typing import Callable
-from log import getLogger
+from log import LoggingStrategy
 import random
 
 class Strategy:
@@ -53,14 +53,15 @@ class RandomStrategy(Strategy):
         return col
 
 class MinimaxStrategy(Strategy):
-    def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int]):
+    def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int], logging: LoggingStrategy):
         self.maxDepth = maxDepth
         self.calculateValue = calculateValue
         self.nodesExplored = 0
+        self.logging = logging
     
     def setPlayer(self, player):
         self.player = player
-        self.logger = getLogger(f'Minimax_{str(player)}')
+        self.logger = self.logging.getLogger(f'Minimax_{str(player)}')
 
     def negamax(self, board: Board, player: Player, turnNumber: int, depth: int):
         self.nodesExplored += 1

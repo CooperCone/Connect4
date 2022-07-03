@@ -2,6 +2,7 @@ from game import Game
 from strategy import *
 from board import *
 from view import NoView
+from log import NoLogging
 from valueHeuristics import runHeuristic, winHeuristic
 
 import copy
@@ -10,10 +11,10 @@ import copy
 
 strategies = [
     RandomStrategy(seed=5),
-    MinimaxStrategy(4, winHeuristic),
-    MinimaxStrategy(4, runHeuristic),
-    MinimaxStrategy(5, runHeuristic),
-    MinimaxStrategy(5, winHeuristic),
+    MinimaxStrategy(4, winHeuristic, NoLogging()),
+    MinimaxStrategy(4, runHeuristic, NoLogging()),
+    MinimaxStrategy(5, runHeuristic, NoLogging()),
+    MinimaxStrategy(5, winHeuristic, NoLogging()),
 ]
 
 pairs = []
@@ -30,6 +31,6 @@ for pair in pairs:
             startBoard.deserialize(line)
 
             print("Starting Game")
-            Game(pair[0], pair[1], NoView(), startBoard=copy.deepcopy(startBoard)).play()
+            Game(pair[0], pair[1], NoView(), NoLogging(), startBoard=copy.deepcopy(startBoard)).play()
             print("Starting Game")
-            Game(pair[1], pair[0], NoView(), startBoard=copy.deepcopy(startBoard)).play()
+            Game(pair[1], pair[0], NoView(), NoLogging(), startBoard=copy.deepcopy(startBoard)).play()
