@@ -53,3 +53,6 @@ class Game:
         
         self.view.onWin(self.board, winner)
         self.logger.info(f"{str(winner)} won the game")
+
+    # def reportMetric(self, name, metric):
+    #     self.metrics[name] = metric 

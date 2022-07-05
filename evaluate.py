@@ -22,8 +22,6 @@ for i in range(len(strategies)):
     for ii in range(i + 1, len(strategies)):
         pairs.append((copy.deepcopy(strategies[i]), copy.deepcopy(strategies[ii])))
 
-print(len(pairs))
-
 for pair in pairs:
     with open('randomTests.test', 'r') as file:
         for line in file.readlines():

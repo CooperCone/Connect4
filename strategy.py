@@ -5,10 +5,20 @@ from copy import deepcopy
 from typing import Callable
 from log import LoggingStrategy
 import random
+import time
 
 class Strategy:
+    def __init__(self):
+        self.metrics = {}
+
     def setPlayer(self, player):
         self.player = player
+
+    def reportMetric(self, name, value):
+        if not name in self.metrics:
+            self.metrics[name] = [ value ]
+        else:
+            self.metrics[name].append(value)
 
     def doTurn(self, board, player, turnNumber):
         pass
@@ -29,6 +39,8 @@ def validateColumn(column, board):
 
 class ManualStrategy(Strategy):
     def doTurn(self, board, _):
+        tic = time.perf_counter()
+
         column = input(str(self.player) + ": Choose a Column: ")
 
         text = validateColumn(column, board)
@@ -39,21 +51,33 @@ class ManualStrategy(Strategy):
 
         columnValue = int(column)
 
+        toc = time.perf_counter()
+        self.reportMetric("time", toc - tic)
+
         return columnValue
 
 class RandomStrategy(Strategy):
     def __init__(self, seed = None):
+        super(RandomStrategy, self).__init__()
         if seed != None:
             random.seed(seed)
+        self.metrics = {}
     
     def doTurn(self, board: Board, _):
+        tic = time.perf_counter()
+        
         col = random.randrange(Width)
         while not board.canPlacePiece(col):
             col = random.randrange(Width)
+        
+        toc = time.perf_counter()
+        self.reportMetric("time", toc - tic)
+
         return col
 
 class MinimaxStrategy(Strategy):
     def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int], logging: LoggingStrategy):
+        super(MinimaxStrategy, self).__init__()
         self.maxDepth = maxDepth
         self.calculateValue = calculateValue
         self.nodesExplored = 0
@@ -123,9 +147,10 @@ class MinimaxStrategy(Strategy):
         return (maxValue, bestCol)
 
     def doTurn(self, board: Board, turnNumber: int):
+        tic = time.perf_counter()
         self.logger.info("Starting minimax")
-        # self.nodesExplored = 0
         # (_, col) = self.negamax(board, player, turnNumber, self.maxDepth)
         (_, col) = self.negamaxABPrune(board, self.player, turnNumber, self.maxDepth, -1e50, 1e50, True)
-        # self.logger.info(f"Ended minimax with {self.nodesExplored} nodes explored")
+        toc = time.perf_counter()
+        self.reportMetric("time", toc - tic)
         return col
