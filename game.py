@@ -41,18 +41,43 @@ class Game:
         winner = None
         curTurn = 0
         while maxTurns == None or curTurn < maxTurns:
+            if len(self.board.getValidColumns()) == 0:
+                break
+            
             if self.turn(self.redStrat, Player.Red):
                 winner = Player.Red
                 break
             
+            if len(self.board.getValidColumns()) == 0:
+                break
+
             if self.turn(self.blueStrat, Player.Blue):
                 winner = Player.Blue
                 break
             
             curTurn += 1
-        
-        self.view.onWin(self.board, winner)
-        self.logger.info(f"{str(winner)} won the game")
 
-    # def reportMetric(self, name, metric):
-    #     self.metrics[name] = metric 
+        # TODO: Fix this!
+        if winner == None:
+            self.redStrat.reportMetric("win", 0)
+            self.redStrat.reportMetric("loss", 0)
+            self.blueStrat.reportMetric("win", 0)
+            self.blueStrat.reportMetric("loss", 0)
+        elif winner == Player.Red:
+            self.redStrat.reportMetric("win", 1)
+            self.redStrat.reportMetric("loss", 0)
+            self.blueStrat.reportMetric("win", 0)
+            self.blueStrat.reportMetric("loss", 1)
+        elif winner == Player.Blue:
+            self.redStrat.reportMetric("win", 0)
+            self.redStrat.reportMetric("loss", 1)
+            self.blueStrat.reportMetric("win", 1)
+            self.blueStrat.reportMetric("loss", 0)
+        else:
+            assert(False)
+
+        if winner == None:
+            self.logger.info("The game was a draw")
+        else:
+            self.logger.info(f"{str(winner)} won the game")
+        self.view.onWin(self.board, winner)

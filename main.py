@@ -7,13 +7,15 @@ from log import FileLogger
 from log import NoLogging
 from functools import partial
 
-# redStrat = ManualStrategy()
-redStrat = MinimaxStrategy(4, runHeuristic, FileLogger())
-blueStrat = MinimaxStrategy(4, runHeuristic, NoLogging())
+logger = FileLogger('game.log')
+redStrat = MinimaxStrategy(4, winHeuristic, logger)
+blueStrat = MinimaxStrategy(4, runHeuristic, logger)
 view = PrintedView()
-logger = NoLogging()
 
-game = Game(redStrat, blueStrat, view, logger)
+board = Board()
+board.deserialize("eeeeeebeeeeerbrbeeeeeeeereeeeeeeeeeeeeeeee")
+
+game = Game(redStrat, blueStrat, view, logger, startBoard=board)
 # game = Game(MinimaxStrategy(4, runHeuristic, Player.Red), ManualStrategy())
 # game = Game(ManualStrategy(), ManualStrategy())
 

@@ -14,7 +14,10 @@ class PrintedView(View):
         os.system('cls')
         print(board)
 
-        print(str(winner) + " Wins!!!\n")
+        if (winner == None):
+            print("The game was a draw!\n")
+        else:
+            print(str(winner) + " Wins!!!\n")
 
     def onPlacePiece(self, board: Board, nextPlayer: Player, placedPiece: int):
         os.system('cls')

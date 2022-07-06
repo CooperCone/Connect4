@@ -6,8 +6,8 @@ class LoggingStrategy:
         pass
 
 class FileLogger(LoggingStrategy):
-    def __init__(self):
-        nameBase = 'game.log'
+    def __init__(self, logName):
+        nameBase = logName
         curExtension = 1
         filename = nameBase + f'.{curExtension}'
         while os.path.exists(filename):

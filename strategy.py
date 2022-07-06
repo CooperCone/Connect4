@@ -97,8 +97,8 @@ class MinimaxStrategy(Strategy):
 
         maxValue = -1e50
         bestCol = -1
+        self.logger.info(' ' * depthDiff + 'Valid Columns: ')
         for col in board.getValidColumns():
-            self.logger.info(' ' * (depthDiff) + f"Negamax looking at column: {col}")
             newBoard = deepcopy(board)
             newBoard.placePiece(col, player)
 
@@ -124,6 +124,13 @@ class MinimaxStrategy(Strategy):
 
         maxValue = -1e50
         bestCol = -1
+        validColumns = board.getValidColumns()
+        self.logger.info(' ' * depthDiff + 'Valid Columns: ' + str(validColumns))
+        assert(len(validColumns) >= 1)
+        if len(validColumns) == 1:
+            self.logger.info(' ' * depthDiff + 'Only one valid move: ' + str(validColumns[0]))
+            return (maxValue, validColumns[0])
+
         for col in board.getValidColumns():
             self.logger.info(' ' * (depthDiff) + f"Negamax looking at column: {col}")
             newBoard = deepcopy(board)
