@@ -4,11 +4,11 @@ import os
 from strategy import Strategy
 from player import Player, getOpposingPlayer
 from board import Board
-from view import View
-from log import LoggingStrategy
+from view import PrintedView, View
+from log import LoggingStrategy, NoLogging
 
 class Game:
-    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy, view: View, logging: LoggingStrategy, startBoard: Board = None):
+    def __init__(self, redStrategy: Strategy, blueStrategy: Strategy, view: View = PrintedView(), logging: LoggingStrategy = NoLogging(), startBoard: Board = None):
         self.redStrat = redStrategy
         self.redStrat.setPlayer(Player.Red)
         self.blueStrat = blueStrategy
@@ -57,7 +57,7 @@ class Game:
             
             curTurn += 1
 
-        # TODO: Fix this!
+        # TODO: Fix this! is terrible design
         if winner == None:
             self.redStrat.reportMetric("win", 0)
             self.redStrat.reportMetric("loss", 0)

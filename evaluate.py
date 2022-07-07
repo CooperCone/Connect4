@@ -185,7 +185,7 @@ calcMetrics = lambda metrics: [
     ),
 ]
 
-tic = time.perf_counter()
+# tic = time.perf_counter()
 metrics: List[RunReport] = simulator.simulate('randomTests_2.test', calcMetrics)
 simulator.printSimuationResults(metrics)
-toc = time.perf_counter()
+# toc = time.perf_counter()

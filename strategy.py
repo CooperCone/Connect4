@@ -3,7 +3,7 @@ from player import *
 
 from copy import deepcopy
 from typing import Callable
-from log import LoggingStrategy
+from log import LoggingStrategy, NoLogging
 import random
 import time
 
@@ -76,7 +76,7 @@ class RandomStrategy(Strategy):
         return col
 
 class MinimaxStrategy(Strategy):
-    def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int], logging: LoggingStrategy):
+    def __init__(self, maxDepth: int, calculateValue: Callable[[Board, Player, int], int], logging: LoggingStrategy = NoLogging()):
         super(MinimaxStrategy, self).__init__()
         self.maxDepth = maxDepth
         self.calculateValue = calculateValue
