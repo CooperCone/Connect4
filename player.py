@@ -1,8 +1,8 @@
-from enum import Enum
+from enum import IntEnum
 
-class Player(Enum):
-    Red = 1
-    Blue = 2
+class Player(IntEnum):
+    Red = 0
+    Blue = 1
 
     def __str__(self):
         return self.name

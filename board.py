@@ -1,5 +1,5 @@
-from codecs import charmap_encode
 import unittest
+from typing import Tuple, List, Iterable, Callable
 
 from player import Player
 
@@ -19,9 +19,9 @@ class Board:
                 if self.board[x][y] == None:
                     row = row + " "
                 elif self.board[x][y] == Player.Red:
-                    row = row + "R"
+                    row = row + "X"
                 elif self.board[x][y] == Player.Blue:
-                    row = row + "B"
+                    row = row + "O"
                 row += " "
             s += "[" + row + "]\n"
         s += "  " + ' '.join([str(i) for i in range(Width)]) + "  \n"
@@ -117,6 +117,87 @@ class Board:
                 runs[player] += 1
         return runs
 
+    # (numberOfPlacedTokens, turnsToResolve, List[(x, y)], List[(x, y)])
+    # first list is for filled positions, second is for empty positions
+    Threat = Tuple[int, int, List[Tuple[int, int]]]
+
+    def getThreats(self) -> Tuple[List[Threat], List[Threat]]:
+        def getThreatOnAxis(threats: Tuple[List, List], xRange: Iterable, yRange: Iterable, getRunPosition: Callable[[int, int, int], Tuple[int, int]]):
+            # Get all horizontal threats
+            foundSlots = set()
+            for x in xRange:
+                for y in yRange:
+                    # check if there is a possible run of two or three that starts here
+                    runPositions = [getRunPosition(x, y, i) for i in range(WinRunSize)]
+                    numReds, numBlues = (0, 0)
+                    emptyPositions = []
+                    fullPositions = []
+                    for runX, runY in runPositions:
+                        if self.board[runX][runY] == Player.Red:
+                            numReds += 1
+                            fullPositions.append((runX, runY))
+                        elif self.board[runX][runY] == Player.Blue:
+                            numBlues += 1
+                            fullPositions.append((runX, runY))
+                        elif self.board[runX][runY] == None:
+                            emptyPositions.append((runX, runY))
+
+                    # if there are no reds and no blues, or
+                    # both reds and blues, continue
+                    if (numReds > 0) == (numBlues > 0):
+                        continue
+                        
+                    # first check if we've already seen a longer run in the same position
+                    foundLongerRun = True
+                    for position in fullPositions:
+                        if position not in foundSlots:
+                            foundLongerRun = False
+                            break
+                    
+                    if foundLongerRun:
+                        continue
+
+                    # if we're here, then this is a unique run
+                    for position in fullPositions:
+                        foundSlots.add(position)
+
+                    # so if we're here, that means that either reds
+                    # or blues are placed, and not both
+                    runPlayer = Player.Red if numReds > 0 else Player.Blue
+                    runSize = numReds if runPlayer == Player.Red else numBlues
+
+                    # now look to see how many stones need to be placed to get the win
+                    numStonesToPlace = 0
+                    placedStones = set()
+                    for emptyX, emptyY in emptyPositions:
+                        for i in range(emptyY + 1):
+                            if self.board[emptyX][i] == None:
+                                if (emptyX, i) not in placedStones:
+                                    numStonesToPlace += 1
+                                    placedStones.add((emptyX, i))
+
+                    threats[int(runPlayer)].append((runSize, numStonesToPlace, fullPositions, emptyPositions))
+
+        threats = ([], [])
+
+        # Get Horizontal Threats
+        getThreatOnAxis(threats, range(Width - WinRunSize + 1), range(Height),
+            lambda x, y, i: (x + i, y))
+        
+        # Get Vertical Threats
+        getThreatOnAxis(threats, range(Width), range(Height - WinRunSize + 1),
+            lambda x, y, i: (x, y + i))
+
+        # Get Right Diagonal Threats
+        getThreatOnAxis(threats, range(Width - WinRunSize + 1), range(Height - WinRunSize + 1),
+            lambda x, y, i: (x + i, y + i))
+
+        # Get Left Diagonal Threats
+        getThreatOnAxis(threats, range(Width - 1, WinRunSize - 1, -1), range(Height - WinRunSize + 1),
+            lambda x, y, i: (x - i, y + i))
+
+        return threats
+
     def detectWin(self):
         runs = self.getRunsOfSize(WinRunSize)
         redRuns = runs[Player.Red]
@@ -182,5 +263,21 @@ class BoardTest(unittest.TestCase):
         self.assertEqual(board.detectWin(), None)
 
 if __name__ == '__main__':
-    unittest.main()
+    # unittest.main()
+    board = Board()
+    board.deserialize('rrrbeerrrbeerbreeebbeeeerbeeeereeeeereeeee')
+    redThreats, blueThreats = board.getThreats()
 
+    print("Board:")
+    print(board)
+    print("")
+
+    print("Red Threats:")
+    for threat in redThreats:
+        print("  ", threat)
+    
+    print("")
+
+    print("Blue Threats:")
+    for threat in blueThreats:
+        print("  ", threat)

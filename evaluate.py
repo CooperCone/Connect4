@@ -8,7 +8,7 @@ from metrics import *
 from view import NoView
 from log import NoLogging
 from log import FileLogger
-from valueHeuristics import runHeuristic, winHeuristic
+from valueHeuristics import runHeuristic, threatHeuristic, winHeuristic
 
 import time
 import copy
@@ -82,6 +82,12 @@ class Simulator:
         for run in runs:
             (redName, blueName) = run[0]
             metrics: MetricList = self.simulateRun(run, simulationFilename)
+            print("Here")
+            for i in range(len(metrics)):
+                if "time" not in metrics[i][0]:
+                    print(i, "red")
+                if "time" not in metrics[i][1]:
+                    print(i, "blue")
             combinedMetrics: List[MetricReport] = evaluationMetrics(metrics)
             allMetrics.append(((redName, blueName), combinedMetrics))
 
@@ -148,9 +154,9 @@ class Simulator:
                 print(f"{self.expand(toStr(blueValue), valueSlots)}")
 
 simulator = Simulator()
-simulator.addStrategy("Random", RandomStrategy(seed=5))
-simulator.addStrategy("Minimax(4,win)", MinimaxStrategy(4, winHeuristic, NoLogging()))
-simulator.addStrategy("Minimax(4,run)", MinimaxStrategy(4, runHeuristic, NoLogging()))
+# simulator.addStrategy("Random", RandomStrategy(seed=5))
+simulator.addStrategy("Minimax(4,run)", MinimaxStrategy(4, runHeuristic))
+simulator.addStrategy("Minimax(4,threat)", MinimaxStrategy(4, threatHeuristic((1, 10, 100, 100000))))
 # simulator.addStrategy(MinimaxStrategy(5, runHeuristic, NoLogging()))
 # simulator.addStrategy(MinimaxStrategy(5, winHeuristic, NoLogging()))
 
@@ -186,6 +192,6 @@ calcMetrics = lambda metrics: [
 ]
 
 # tic = time.perf_counter()
-metrics: List[RunReport] = simulator.simulate('randomTests_2.test', calcMetrics)
+metrics: List[RunReport] = simulator.simulate('randomTests_50.test', calcMetrics)
 simulator.printSimuationResults(metrics)
 # toc = time.perf_counter()
